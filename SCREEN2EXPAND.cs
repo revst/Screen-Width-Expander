@@ -19,7 +19,7 @@ class SCREEN2EXPAND
 		monochromeFS.Seek(18,SeekOrigin.Begin);	//Find information about monochrome picture width & height.
 
 		Int32 monochromeWidth = monochromeBR.ReadInt32();	//Save Width value.
-		Int32 colorWidth = monochromeWidth/3;				//Width of color image is 3 times narrower.
+		Int32 colorWidth = monochromeWidth/3;			//Width of color image is 3 times narrower.
 		Int32 colorHeight = monochromeBR.ReadInt32();		//Height for color bit map header will be the same.
 		
 	
@@ -29,29 +29,29 @@ class SCREEN2EXPAND
 		monochromeFS.Close();
 	
 
-		if ((monochromeWidth%96f)>0)						//Width of monochrome image must be divisible by 96 pixels.
-			{												//Check incoming width compliance, otherwise skip a file.
+		if ((monochromeWidth%96f)>0)				//Width of monochrome image must be divisible by 96 pixels.
+			{						//Check incoming width compliance, otherwise skip a file.
 			Console.WriteLine("The WIDTH of incoming '"+monochrome.Name+"' file");
 			Console.WriteLine("is not completely divided by 96 pixels.");
 			Console.WriteLine("Skipping...");				
 			}												
-		else if (bitsperpixel!=1)							//The incoming file must be 1 bit per pixel image.
-			{												//Check incoming bits per pixel compliance, otherwise skip a file.
+		else if (bitsperpixel!=1)				//The incoming file must be 1 bit per pixel image.
+			{						//Check incoming bits per pixel compliance, otherwise skip a file.
 			Console.WriteLine("The incoming '"+monochrome.Name+"' is not 1 bit per pixel file.");
 			Console.WriteLine("Skipping...");
 			}
 		else
 			{
 
-		byte [] monochromeArray = File.ReadAllBytes(monochrome.Name); //Read monochrome bit map file.
+		byte [] monochromeArray = File.ReadAllBytes(monochrome.Name);		 //Read monochrome bit map file.
 		
 		byte [] colorArray = new byte [(((monochromeArray.Length-62)/3)*4)+118]; //Cut 62 bytes monochrome file header.
-																				//Get data proportion monocrome-3:4-color.
-																				//Add 118 bytes of color file header.
+											//Get data proportion monocrome-3:4-color.
+											//Add 118 bytes of color file header.
 		
 		int colorArrayIndex=118; //Set offset of color array to the image data area. It will be filled with converted data.
 
-		for (int z=62; z<(monochromeArray.Length); z+=3) //OnTheFly Conversion.
+		for (int z=62; z<(monochromeArray.Length); z+=3)			 //OnTheFly Conversion.
 		{	
 		int firstpixel = ((monochromeArray [z] & (1<<7))+(monochromeArray [z] & (1<<6))+(monochromeArray [z] & (1<<5)))>>5;
 		int secondpixel = ((monochromeArray [z] & (1<<4))+(monochromeArray [z] & (1<<3))+(monochromeArray [z] & (1<<2)))>>2;
@@ -78,20 +78,20 @@ class SCREEN2EXPAND
 		FileStream colorFS = new FileStream("Compressed_"+monochrome.Name, FileMode.Create);
 		BinaryWriter colorBW = new BinaryWriter(colorFS);
 		
-		colorBW.Write(colorArray); 				//Write color bit map image data
+		colorBW.Write(colorArray); 			//Write color bit map image data
 		
 		colorBW.Seek(0,SeekOrigin.Begin);
-		colorBW.Write(colorHeader);				//Write color bit map header data template.
+		colorBW.Write(colorHeader);			//Write color bit map header data template.
 		
 		colorBW.Seek(2,SeekOrigin.Begin);
 		colorBW.Write(colorArray.Length);		//Put Size of result file in color bit map header. 
 		
 		colorBW.Seek(18,SeekOrigin.Begin);
-		colorBW.Write(colorWidth);				//Put Width in color bit map header. 
-		colorBW.Write(colorHeight);				//Put Height in color bit map header. 
+		colorBW.Write(colorWidth);			//Put Width in color bit map header. 
+		colorBW.Write(colorHeight);			//Put Height in color bit map header. 
 		
 		colorBW.Seek(34,SeekOrigin.Begin);
-		colorBW.Write(colorArray.Length-118);	//Put Size of image data in color bit map header. 
+		colorBW.Write(colorArray.Length-118);		//Put Size of image data in color bit map header. 
 		
 		colorBW.Close();
 		colorFS.Close();
